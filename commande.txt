@@ -1,0 +1,161 @@
+section 2
+1 )installation:composer create-project symfony/website-skeleton api-course
+
+2) config db:env
+
+3) php  bin/console  doctrine:database:create
+
+4) creation des entity
+a-php bin/console make:entity
+b- php bin/console make:migration
+c- php bin/console doctrine:migrations:migrate
+
+5)Fixtures : Créer un jeu de fausses données
+
+ commande : composer require orm-fixtures fzaninotto/faker --dev
+
+a- orm-fixtures
+	permet de creer  des jeux de fausses donnees dans la base de donnees
+b- fzaninotto/faker
+	permet de generer des donnees  de facon aleatoire
+
+c- créer des Fixtures ! Des jeux de fausses données:
+	 grace a AppFixtures dans  le dossier DataFixtures
+
+d-  php bin/console doctrine:fixtures:load --no-interaction
+	permet de charger les donnees dans la base 
+
+6) gestion des Users
+a- php bin/console make:user 
+	permet de mettre en place les fondementaux de la gestion des utilisateurs
+
+7)versionning du code avec GIT
+
+a- git init
+	permet d'initialiser le versionning du code dans le dossier
+b- git status
+	permet de lister les modification dans notre dossier
+c- git add .
+	permet de prendre en compte toutes les modifications en attente
+d- git commit -m "..."
+	permet de confirmer la prise en compte des modifications ajoutees
+
+section 3
+
+1)installation et utilisation de  ApiPlatform 
+a- composer require api
+	permet d'installer le composant d'API platform
+
+b-Création de notre première Ressource grâce à l'annotation @ApiResource
+	* Le fichier api_platform.yaml : permet la configuration globale du composant d'API
+	* prefix de base :/api
+		API platform va intercepter toutes les requetes qui apelle /api/**
+	*API platform opere principalement sur nos entity, se sont les ressources a donnees au public de l'api
+	*on utlise le systeme d'annotation ou un systeme de configuration yaml
+	
+	*Notion de ressource(REST)
+		une ou plusieurs donnees que l'on peut exploiter via l'API REST
+        * Annotation : @ApiResource 
+		permet d'exposer via l'API une entity sous la forme d'une ressource
+
+2) PostMan pour tester notre API REST 
+   permet d'envoyer des request http et de voir le resultat simplement
+	*installer le logiciel
+	* apres l'installation : creer une collection
+				  permet de regrouper differentes requetes dans un groupe de dossier
+
+3) Le modèle de maturité de Richardson
+
+4) Découverte du format JSON-LD : JSON Linked Data
+	*API platorm est de niveau 3 dans le modele de Richardson: API hypermedia
+		il y'a pas que les donnees brutes, il faut contextualiser ces donnees car nous avons :
+		 la notion de metadonnees:
+			ce sont des donnees supplementaires qui concernent les donnees brutes
+		cela reste du json: 
+			il inclue simplement des donnnees standardes (comme @context ou @type)
+			c'est du json LD
+	*Les headers HTTP
+		informations supplementaires qu'on envoie avec la request HTTP
+		- sur postman pour recuperer que les donnees brutes on fait dans la colonne Headers:
+			KEY:Accept , VALUE:application/json
+        * Pagination automatique:
+		API platform execute une pagination automatique des donnees
+
+8)Le concept d'IRI(adresses uniques) dans le format JSON-LD
+	Notion d"IRI : c'est l'adresse d'une ressource sur l'API
+	Quand on veut montrer des liens existant entre différentes ressources dans le format JSON-LD,
+	on utilise des IRIs (Internationalized Resource Identifier) !
+	exemple:   "user": "/api/users/1" IRI=>/api/users/1
+
+9)Le fichier de configuration d'API Platform :api_platform.yaml
+  * https://api-platform.com/docs/core/configuration/
+  * configuration par defaut : tout les modifications apporter sur le fichier api_platform.yaml,
+    s'applique (concerne) toutes les ressources, mais peut ensuite varier(specifier) au cas par cas
+
+10)Surcharger la configuration pour une ressource en particulier:
+	* ApiPlatform nous permet de surcharger la configuration par défaut (qui s'applique à toutes nos ressources) sur une ressource en particulier grâce à l'annotation @ApiResource et à ses paramètres !
+	
+	-A)=> specifier la pagination pour une ressource:
+	         @ApiResource(attributes={"pagination_enabled"=true})
+	
+	-B) => Configurer le nombre d'éléments avec l'option itemsPerPage:
+		Si les données sont paginées, on doit bien pouvoir choisir combien d'éléments par page
+	        on veut recevoir non ? Evidemment ! Grâce à l'option items_per_page !
+		 * @ApiResource(attributes={"pagination_items_per_page"=30})
+		
+11)Surcharger la configuration dans une Requête HTTP
+
+Résumé : les 3 niveaux de configuration (globale, par ressource et par requête)
+	 les 3 niveaux de configuration possibles :
+            Le fichier de configuration api_platform.yaml donne des configurations pour toutes nos ressources
+	    L'annotation @ApiResource() permet de configurer au cas par cas nos ressources
+            Les paramètres qu'on passe à une requête HTTP peuvent encore préciser certaines choses 
+
+ 12)Donner un ordre par défaut à nos résultats:
+ 	* @ApiResource(attributes={"order"=amount"DESC"}})              
+
+13)SearchFilter : permettre une recherche sur nos résultats:
+		  * @ApiFilter(SearchFilter::class,properties={"firstName":"partial","lastName","company"}) =>recherche sur les attributs enumeres
+		  * @ApiFilter(SearchFilter::class)=> recherche sur tout les attributs de notre class avec specification:exact
+
+14)OrderFilter : permettre d'ordonner (trier) nos résultats:
+		 * @ApiFilter(OrderFilter::class, properties={"id": "ASC", "name": "DESC"})
+		  http://localhost:8000/api/invoices?order[sentAt]=desc
+
+
+section :la sérialisation et la désérialisation
+
+ 1) les concepts de Sérialisation et Désérialisation
+
+A) la normalisation et la serialisation:
+	entity(objet php complexe)      ===> normalisation		==> en   Array Classique     puis serialisation                        ==> en  Array JSON
+	doctrine			    (transformer ces entity )                                    (permet de transformer cet array)   
+
+B) la Deserialisation et denormalisation:
+		
+	Array JSON   ==> Deserialisation           ==>Array Classique  ==>   Denormalisation					==> entity Doctirne
+			(prend cet Array JSON                               (puis la denormalisation
+			 que PHP ne comprend pas en)                         qui permet de transfomer 
+									     cet Array classique en entity(objet doctrine))
+
+ d'ou 
+ *la notion de contexte :
+  -contexte de normalisation : api donne moi
+  -contexte de denormalisation : api je te donne
+
+ * la notion de groupes: permettent de definir quelles sont les donnees visibles lors de la normalisation
+			 et quelles sont les donnees modifiables lors de la denormalisation
+
+2)Appliquer un groupe de sérialisation à l'entité  
+	*groupe de serialisation:
+		permet de creer un groupe d'information exposees/modifiables
+		-normalizationContext={"groups"={"customers_read"}} : customers_read => ettiquette(identifiant) du groupe
+		-denormalizationContext={"groups"={"customers_write"}}
+
+3)Gérer la sérialisation des ressources liées:
+	On peut "tagger" les propriétés de ressources liées pour les exposer dans le même contexte,
+ 	c'est très intéressant quand on veut récupérer ces informations en passant par une ressource principale
+ 	(exemple : récupérer les données des factures quand on extrait un customer)
+	* exemple sur l'enity Customer on ajout  sur la propriete $id dans @groups :invoices_read => au finale on a  * @groups({"customers_read","invoices_read"}) 
+	donc lors de la  selection des invoices : id customer sera visible	
+	
