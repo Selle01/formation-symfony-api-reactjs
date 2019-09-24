@@ -14,7 +14,8 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- * @ApiResource
+ * @ApiResource(
+ * normalizationContext={"groups"={"users_read"}})
  * @UniqueEntity("email",message="un utilisateur avec cette email existe deja") 
  */
 class User implements UserInterface
@@ -23,13 +24,13 @@ class User implements UserInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @groups({"customers_read","invoices_read","invoices_subresource"})
+     * @groups({"customers_read","invoices_read","invoices_subresource","users_read","users_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @groups({"customers_read","invoices_read","invoices_subresource"})
+     * @groups({"customers_read","invoices_read","invoices_subresource","users_read"})
      * @Assert\NotBlank(message="L'email du customer est obligatoire")
      * @Assert\Email(message="Le format doit etre valide")
      */
@@ -49,7 +50,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @groups({"customers_read","invoices_read","invoices_subresource"})
+     * @groups({"customers_read","invoices_read","invoices_subresource","users_read"})
      * @Assert\NotBlank(message="Le prenom du customer est obligatoire")
      * @Assert\Length(
      *  min=3,minMessage="le prenom doit faire entre 3 et 255 caracteres",
@@ -60,7 +61,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @groups({"customers_read","invoices_read","invoices_subresource"})
+     * @groups({"customers_read","invoices_read","invoices_subresource","users_read"})
      * @Assert\NotBlank(message="Le nom du customer est obligatoire")
      * @Assert\Length(
      *  min=3,minMessage="le nom doit faire entre 3 et 255 caracteres",
