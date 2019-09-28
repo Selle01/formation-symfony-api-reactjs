@@ -3,7 +3,7 @@
 namespace App\Entity;
 
 use App\Entity\User;
-USE ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiFilter;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -33,7 +33,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *              }
  * },
  * attributes={
- *      "pagination_enabled"=true,
+ *      "pagination_enabled"=false,
  *      "pagination_items_per_page"=20,
  *      "order"={"sentAt": "DESC"}
  *    },
@@ -46,7 +46,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Invoice
 {
 
-    
+
 
     /**
      * @ORM\Id()
@@ -80,7 +80,7 @@ class Invoice
      */
     private $chrono;
 
-    
+
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -103,10 +103,11 @@ class Invoice
      * @groups({"invoices_read","invoices_subresource"})
      * @return User
      */
-    public function getUser():User{
+    public function getUser(): User
+    {
         return $this->customer->getUser();
     }
-  
+
 
     public function getId(): ?int
     {
@@ -130,7 +131,7 @@ class Invoice
         return $this->sentAt;
     }
 
-    public function setSentAt( $sentAt): self
+    public function setSentAt($sentAt): self
     {
         $this->sentAt = $sentAt;
 
