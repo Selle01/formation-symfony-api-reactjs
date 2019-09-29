@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Pagination from "../components/Pagination";
+
 //service
-import {
-  default as CustomersAPI,
-  default as customersAPI
-} from "../services/customersAPI";
-import { async } from "q";
+import CustomersAPI from "../services/customersAPI";
 
 const CustomersPage = pops => {
   const [customers, setCustomers] = useState([]);
@@ -32,7 +29,7 @@ const CustomersPage = pops => {
     const originslCustomers = [...customers];
     setCustomers(customers.filter(customer => customer.id !== id));
     try {
-      await customersAPI.delete(id);
+      await CustomersAPI.delete(id);
       console.log("suppression reussie");
     } catch (error) {
       setCustomers(originslCustomers);

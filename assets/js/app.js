@@ -1,28 +1,73 @@
 
-import React from 'react';
+import React, { useState, useContext } from "react";
 import ReactDOM from 'react-dom';
-import { HashRouter, Route, Switch } from 'react-router-dom';
+import { HashRouter, Route, Switch, withRouter, Redirect } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import CustomersPage from './pages/CustomersPage';
 import HomePage from './pages/HomePage';
 import InvoicesPage from './pages/InvoicesPage';
+import LoginPage from './pages/LoginPage';
+import AuthAPI from './services/authAPI';
+import AuthContext from './contexts/AuthContext';
+import PrivateRoute from "./components/PrivateRoute";
 
+AuthAPI.setup();
+
+// const PrivateRoute = ({ path, isAuthenticated, component }) => {
+//     return isAuthenticated ? <Route path={path} component={component} /> : <Redirect to="/login" />
+// }
+
+// const PrivateRoute = ({ path, component }) => {
+//     const { isAuthenticated } = useContext(AuthContext);
+//     return isAuthenticated ? <Route path={path} component={component} /> : <Redirect to="/login" />
+// }
 
 const App = () => {
+    //demander par defaut a l'API si on est connecté ou pas
+    const [isAuthenticated, setIsAuthenticated] = useState(
+        AuthAPI.isAuthenticated()
+    );
+
+    const NavBarWithRouter = withRouter(Navbar); // retourne un composant qui herite des props du composant Route (history... etc) afin de permettre la navigation
+
+    // const contextValue = { // idem que celui en dessous
+    //     isAuthenticated: isAuthenticated,
+    //     setIsAuthenticated: setIsAuthenticated
+    // }
+    const contextValue = {
+        isAuthenticated,
+        setIsAuthenticated
+    }
     return (
-        <HashRouter>
+        <AuthContext.Provider value={contextValue}>
+            <HashRouter>
+                {/* <Navbar isAuthenticated={isAuthenticated} onLogout={setIsAuthenticated} /> */}
+                {/* <NavBarWithRouter isAuthenticated={isAuthenticated} onLogout={setIsAuthenticated} /> */}
 
-            <Navbar />
+                <NavBarWithRouter />
 
-            <main className="container pt-5">
-                <Switch>
-                    <Route path="/invoices" component={InvoicesPage} />
-                    {/* <Route path="/customers" component={CustomersPageWithPagination} /> pagination via l'API */}
-                    <Route path="/customers" component={CustomersPage} />
-                    <Route path="/" component={HomePage} />
-                </Switch>
-            </main>
-        </HashRouter>
+                <main className="container pt-5">
+                    <Switch>
+
+                        <Route path="/login" component={LoginPage} />
+                        <PrivateRoute path="/invoices" component={InvoicesPage} />
+                        <PrivateRoute path="/customers" component={CustomersPage} />
+                        <Route path="/" component={HomePage} />
+
+                        {/* <Route path="/login" render={(props) => (<LoginPage onLogin={setIsAuthenticated} {...props} />)} />
+                        <PrivateRoute path="/invoices" isAuthenticated={isAuthenticated} component={InvoicesPage} />
+                        <PrivateRoute path="/customers" isAuthenticated={isAuthenticated} component={CustomersPage} /> */}
+
+                        {/* <Route path="/login" component={LoginPage} /> */}
+                        {/* <Route path="/invoices" component={InvoicesPage} /> */}
+                        {/* <Route path="/customers" component={CustomersPageWithPagination} /> pagination via l'API */}
+                        {/* <Route path="/customers" component={CustomersPage} /> */}
+                        {/* <Route path="/customers" render={(props) => { return (isAuthenticated) ? <CustomersPage {...props} /> : <Redirect to="/login" /> }} /> */}
+
+                    </Switch>
+                </main>
+            </HashRouter>
+        </AuthContext.Provider>
     );
 }
 const rootElement = document.querySelector('#app')
