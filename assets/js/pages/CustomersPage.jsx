@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Pagination from "../components/Pagination";
-
+import { Link } from "react-router-dom";
 //service
 import CustomersAPI from "../services/customersAPI";
 
@@ -65,7 +65,12 @@ const CustomersPage = pops => {
 
   return (
     <>
-      <h1>Liste des Clients</h1>
+      <div className="mb-2 d-flex justify-content-between align-items-center">
+        <h1>Liste des Clients</h1>
+        <Link to="/customers/new" className="btn btn-primary">
+          Creer un Client
+        </Link>
+      </div>
 
       <div className="form-group">
         <input
