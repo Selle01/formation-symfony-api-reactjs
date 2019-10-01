@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import invoicesAPI from "../services/invoicesAPI";
 import Pagination from "../components/Pagination";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import TableLoader from "../components/loaders/loaders/TableLoader";
 
 const STATUS_CLASSES = {
   PAID: "success",
@@ -21,14 +23,17 @@ const InvoicesPage = props => {
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const formatDate = str => moment(str).format("DD/MM/YYYY");
+  const [loading, setLoading] = useState(true);
 
   // permet d'aller recuperer les invoices de facon async
   const fetchInvoices = async () => {
     try {
       const data = await invoicesAPI.findAll();
       setInvoices(data);
+      setLoading(false);
     } catch (error) {
-      console.log(error.response);
+      // console.log(error.response);
+      toast.error("Erreur de chargement des factures");
     }
   };
 
@@ -43,10 +48,12 @@ const InvoicesPage = props => {
     setInvoices(invoices.filter(invoice => invoice.id !== id));
     try {
       await invoicesAPI.delete(id);
-      console.log("suppression reussie");
+      //console.log("suppression reussie");
+      toast.success("suppression facture reussie");
     } catch (error) {
       setInvoices(originslInvoices);
-      console.log("echec suppression");
+      //console.log("echec suppression");
+      toast.error("Erreur de suppression du facture");
     }
   };
 
@@ -107,45 +114,48 @@ const InvoicesPage = props => {
             <th></th>
           </tr>
         </thead>
-        <tbody>
-          {paginatedInvoices.map(invoice => (
-            <tr key={invoice.id}>
-              <td>{invoice.id}</td>
-              <td>{invoice.chrono}</td>
-              <td>
-                <a href="">
-                  {invoice.customer.firstName} {invoice.customer.lastName}
-                </a>
-              </td>
-              <td className="text-center"> {formatDate(invoice.sentAt)}</td>
-              <td className="text-center">
-                {invoice.amount.toLocaleString()} $
-              </td>
-              <td className="text-center">
-                <span
-                  className={"badge badge-" + STATUS_CLASSES[invoice.status]}
-                >
-                  {STATUS_LABELS[invoice.status]}
-                </span>
-              </td>
-              <td>
-                <Link
-                  to={"/invoices/" + invoice.id}
-                  className="btn btn-sm btn-primary mr-1"
-                >
-                  Edite
-                </Link>
-                <button
-                  onClick={() => handleDelete(invoice.id)}
-                  className="btn btn-sm btn-danger"
-                >
-                  Supprimer
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
+        {!loading && (
+          <tbody>
+            {paginatedInvoices.map(invoice => (
+              <tr key={invoice.id}>
+                <td>{invoice.id}</td>
+                <td>{invoice.chrono}</td>
+                <td>
+                  <Link to={"/customers/" + invoice.customer.id}>
+                    {invoice.customer.firstName} {invoice.customer.lastName}
+                  </Link>
+                </td>
+                <td className="text-center"> {formatDate(invoice.sentAt)}</td>
+                <td className="text-center">
+                  {invoice.amount.toLocaleString()} $
+                </td>
+                <td className="text-center">
+                  <span
+                    className={"badge badge-" + STATUS_CLASSES[invoice.status]}
+                  >
+                    {STATUS_LABELS[invoice.status]}
+                  </span>
+                </td>
+                <td>
+                  <Link
+                    to={"/invoices/" + invoice.id}
+                    className="btn btn-sm btn-primary mr-1"
+                  >
+                    Edite
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(invoice.id)}
+                    className="btn btn-sm btn-danger"
+                  >
+                    Supprimer
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        )}
       </table>
+      {loading && <TableLoader />}
       <Pagination
         currentPage={currentPage}
         itemsPerPage={itemsPerPage}

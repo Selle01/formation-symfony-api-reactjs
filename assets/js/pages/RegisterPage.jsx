@@ -1,7 +1,6 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
+import { toast } from "react-toastify";
 import Field from "../components/forms/Field";
-import { async } from "q";
-import Axios from "axios";
 import usersAPI from "../services/usersAPI";
 
 const RegisterPage = ({ match, history }) => {
@@ -34,12 +33,14 @@ const RegisterPage = ({ match, history }) => {
     if (user.password !== user.passwordConfirm) {
       apiErrors.passwordConfirm = "votre mot de passe n'est pas conforme";
       setErrors(apiErrors);
+      toast.error("Des erreurs dans votre formulaire");
       return;
     }
     try {
       await usersAPI.register(user);
       //TODO: Flash notification d'erreur
       setErrors({});
+      toast.success("connexion reusie");
       history.replace("/login");
       //console.log(data);
     } catch ({ response }) {
@@ -49,7 +50,7 @@ const RegisterPage = ({ match, history }) => {
           apiErrors[propertyPath] = message;
         });
         setErrors(apiErrors);
-        //TODO: Flash notification d'erreur
+        toast.error("Des erreurs dans votre formulaire");
       }
     }
   };

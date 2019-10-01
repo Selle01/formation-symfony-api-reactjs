@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Field from "../components/forms/Field";
 import customersAPI from "../services/customersAPI";
+import { toast } from "react-toastify";
+import FormContentLoader from "../components/loaders/loaders/FormContentLoader";
 
 const CustomerPage = ({ match, history }) => {
   const { id = "new" } = match.params;
@@ -19,7 +21,7 @@ const CustomerPage = ({ match, history }) => {
     email: "",
     company: ""
   });
-
+  const [loading, setLoading] = useState(false);
   // recuperation du customer en fonction de l'id
   const fetchCustomer = async id => {
     try {
@@ -29,10 +31,11 @@ const CustomerPage = ({ match, history }) => {
         id
       );
       setCustomer({ firstName, lastName, email, company });
+      setLoading(false);
       //console.log(data);
     } catch (error) {
       //console.log(error.response);
-      //TODO: Flash notification de succes
+      toast.error("echec de chargement du client");
       history.replace("/customers");
     }
   };
@@ -42,6 +45,7 @@ const CustomerPage = ({ match, history }) => {
   //chargement  du customer   si besoin au chargement du composant ou au chargement de l'identifiant
   useEffect(() => {
     if (id !== "new") {
+      setLoading(true);
       setEditing(true);
       fetchCustomer(id);
     }
@@ -57,15 +61,15 @@ const CustomerPage = ({ match, history }) => {
   const handleSubmit = async event => {
     event.preventDefault();
     try {
+      setErrors({});
       if (editing) {
         // const response = await axios.put(
         //   "http://127.0.0.1:8000/api/customers/" + id,
         //   customer
         // );
         await customersAPI.update(id, customer);
-
+        toast.success("modification du client reussie");
         //console.log(response.data);
-        //TODO: Flash notification de succes
       } else {
         await customersAPI.create(customer);
 
@@ -74,13 +78,12 @@ const CustomerPage = ({ match, history }) => {
         //   customer
         // );
 
-        //TODO: Flash notification de succes
+        toast.success("creation du client reussie");
         //props.history.replace("/customers");
         history.replace("/customers");
       }
 
       //console.log(response.data);
-      setErrors({});
     } catch ({ response }) {
       const { violations } = response.data;
       if (violations) {
@@ -89,7 +92,7 @@ const CustomerPage = ({ match, history }) => {
           apiErrors[propertyPath] = message;
         });
         setErrors(apiErrors);
-        //TODO: Flash notification d'erreur
+        toast.error("des erreurs dans votre formulaire");
       }
     }
     //catch (error) {
@@ -112,53 +115,56 @@ const CustomerPage = ({ match, history }) => {
       <Link to="/customers" className="float-right">
         Retour liste Clients
       </Link>
-      <form onSubmit={handleSubmit}>
-        <Field
-          name="lastName"
-          label="Nom de famille"
-          placeholder="Nom de famille du client"
-          value={customer.lastName}
-          onChange={handleChange}
-          error={errors.lastName}
-        />
-        <Field
-          name="firstName"
-          label="Prenom du client"
-          placeholder="Nom de famille du client"
-          value={customer.firstName}
-          onChange={handleChange}
-          error={errors.firstName}
-        />
-        <Field
-          name="email"
-          label="email"
-          placeholder="email du client"
-          type="email"
-          value={customer.email}
-          onChange={handleChange}
-          error={errors.email}
-        />
-        <Field
-          name="company"
-          label="entreprise"
-          placeholder="entreprise du client"
-          value={customer.company}
-          onChange={handleChange}
-          error={errors.company}
-        />
-        <div className="form-group">
-          <button
-            type="submit"
-            className="btn btn-success"
-            onSubmit={handleSubmit}
-          >
-            Enregistrer
-          </button>
-          <button type="reset" className="btn">
-            Effacer
-          </button>
-        </div>
-      </form>
+      {loading && <FormContentLoader />}
+      {!loading && (
+        <form onSubmit={handleSubmit}>
+          <Field
+            name="lastName"
+            label="Nom de famille"
+            placeholder="Nom de famille du client"
+            value={customer.lastName}
+            onChange={handleChange}
+            error={errors.lastName}
+          />
+          <Field
+            name="firstName"
+            label="Prenom du client"
+            placeholder="Nom de famille du client"
+            value={customer.firstName}
+            onChange={handleChange}
+            error={errors.firstName}
+          />
+          <Field
+            name="email"
+            label="email"
+            placeholder="email du client"
+            type="email"
+            value={customer.email}
+            onChange={handleChange}
+            error={errors.email}
+          />
+          <Field
+            name="company"
+            label="entreprise"
+            placeholder="entreprise du client"
+            value={customer.company}
+            onChange={handleChange}
+            error={errors.company}
+          />
+          <div className="form-group">
+            <button
+              type="submit"
+              className="btn btn-success"
+              onSubmit={handleSubmit}
+            >
+              Enregistrer
+            </button>
+            <button type="reset" className="btn">
+              Effacer
+            </button>
+          </div>
+        </form>
+      )}
     </>
   );
 };
