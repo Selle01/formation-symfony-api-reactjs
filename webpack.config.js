@@ -1,3 +1,4 @@
+require("dotenv").config();
 var Encore = require('@symfony/webpack-encore');
 
 // Manually configure the runtime environment if not already configured yet by the "encore" command.
@@ -48,7 +49,7 @@ Encore
     .enableVersioning(Encore.isProduction())
 
     // enables @babel/preset-env polyfills
-    .configureBabel(() => {}, {
+    .configureBabel(() => { }, {
         useBuiltIns: 'usage',
         corejs: 3
     })
@@ -69,6 +70,11 @@ Encore
     // uncomment if you use API Platform Admin (composer req api-admin)
     .enableReactPreset()
     //.addEntry('admin', './assets/js/admin.js')
-;
+    ;
+
+
+Encore.configureDefinePlugin(option => {
+    option["process.env"].API_URL = process.env.API_URL;
+});
 
 module.exports = Encore.getWebpackConfig();
